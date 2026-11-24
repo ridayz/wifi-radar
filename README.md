@@ -104,3 +104,13 @@ npm test
 - **Grafik traffic bolong** → biasanya laptop sleep/resume. Ekspor JSON menandainya di `summary.gaps`.
 - **Daftar perangkat kosong** → jalankan Scan; pastikan terhubung ke Wi-Fi yang sama.
 - **Loss tinggi** → cek juga dari perangkat lain; ICMP bisa diprioritaskan rendah oleh sebagian jaringan.
+
+## Sinkron ke GitHub
+
+Repo: https://github.com/ridayz/wifi-radar
+
+```bash
+node scripts/sync.mjs -m "feat: ..."   # commit + push
+node scripts/sync.mjs --dry-run        # lihat dulu, tanpa commit
+node scripts/watch-sync.mjs            # auto commit + push 120 detik setelah edit
+```
