@@ -1,0 +1,14 @@
+{
+  "name": "wifi-radar",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local WiFi telemetry dashboard: live traffic, signal, latency, and LAN device discovery for network evidence.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test tests"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

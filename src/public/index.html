@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WiFi Radar — telemetry &amp; evidence</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>WiFi Radar</h1>
+          <p>telemetry &amp; evidence</p>
+        </div>
+      </div>
+
+      <div class="link-strip">
+        <span class="dot" id="linkDot"></span>
+        <span class="ssid" id="ssid">Menunggu Wi-Fi…</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span class="link-meta" id="linkMeta">—</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnRecord" type="button">Mulai rekam</button>
+        <button class="btn" id="btnScan" type="button">Scan perangkat</button>
+        <select class="select" id="exportScope" title="Cakupan data yang diekspor">
+          <option value="record">rekaman</option>
+          <option value="session">seluruh sesi</option>
+        </select>
+        <a class="btn btn-quiet" id="exportJson" href="/api/export?format=json" download>Ekspor JSON</a>
+        <a class="btn btn-quiet" id="exportCsv" href="/api/export?format=csv" download>CSV</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="kpis" aria-label="Ringkasan link">
+        <article class="kpi">
+          <div class="kpi-label"><span class="dot rx"></span>Unduh</div>
+          <div class="kpi-value" id="kpiRx">—</div>
+          <div class="kpi-sub" id="kpiRxSub">puncak —</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label"><span class="dot tx"></span>Unggah</div>
+          <div class="kpi-value" id="kpiTx">—</div>
+          <div class="kpi-sub" id="kpiTxSub">puncak —</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label">Kekuatan sinyal</div>
+          <div class="kpi-value" id="kpiSignal">—</div>
+          <div class="kpi-sub" id="kpiSignalSub">—</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label">Latensi internet</div>
+          <div class="kpi-value" id="kpiLatency">—</div>
+          <div class="kpi-sub" id="kpiLatencySub">—</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label">Packet loss</div>
+          <div class="kpi-value" id="kpiLoss">—</div>
+          <div class="kpi-sub" id="kpiLossSub">—</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label">Perangkat</div>
+          <div class="kpi-value" id="kpiClients">—</div>
+          <div class="kpi-sub" id="kpiClientsSub">—</div>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="panel span-8">
+          <header class="panel-head">
+            <h2>Traffic realtime</h2>
+            <div class="legend">
+              <span><i class="dot rx"></i>Unduh <b id="legendRx">—</b></span>
+              <span><i class="dot tx"></i>Unggah <b id="legendTx">—</b></span>
+            </div>
+          </header>
+          <div class="chart-wrap tall">
+            <canvas id="chartTraffic"></canvas>
+            <div class="chart-tip" id="tipTraffic" hidden></div>
+          </div>
+          <div class="panel-foot" id="trafficFoot">Total sesi —</div>
+        </article>
+
+        <article class="panel span-4">
+          <header class="panel-head">
+            <h2>Kekuatan sinyal</h2>
+            <span class="head-value" id="signalHead">—</span>
+          </header>
+          <div class="chart-wrap medium">
+            <canvas id="chartSignal"></canvas>
+            <div class="chart-tip" id="tipSignal" hidden></div>
+          </div>
+          <div class="panel-foot" id="signalFoot">—</div>
+        </article>
+
+        <article class="panel span-4">
+          <header class="panel-head">
+            <h2>Latensi &amp; loss</h2>
+            <span class="head-value" id="latencyHead">—</span>
+          </header>
+          <div class="chart-wrap medium">
+            <canvas id="chartLatency"></canvas>
+            <div class="chart-tip" id="tipLatency" hidden></div>
+          </div>
+          <div class="panel-foot" id="latencyFoot">—</div>
+        </article>
+
+        <article class="panel span-4">
+          <header class="panel-head">
+            <h2>Detail link</h2>
+          </header>
+          <dl class="defs" id="linkRows"></dl>
+        </article>
+
+        <article class="panel span-4">
+          <header class="panel-head">
+            <h2>Kesehatan internet</h2>
+            <span class="head-value" id="healthHead">—</span>
+          </header>
+          <dl class="defs" id="healthRows"></dl>
+        </article>
+
+        <article class="panel span-12">
+          <header class="panel-head devices-head">
+            <div>
+              <h2>Perangkat terdeteksi</h2>
+              <p class="panel-sub" id="deviceMeta">Menunggu scan…</p>
+            </div>
+            <div class="device-tools">
+              <input id="deviceSearch" type="search" placeholder="Cari IP, MAC, hostname" autocomplete="off" />
+            </div>
+          </header>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="w-status">Status</th>
+                  <th>IP</th>
+                  <th>MAC</th>
+                  <th>Hostname</th>
+                  <th>Peran</th>
+                  <th class="num">Terakhir terlihat</th>
+                </tr>
+              </thead>
+              <tbody id="deviceRows">
+                <tr class="empty-row"><td colspan="6">Belum ada perangkat. Jalankan “Scan perangkat”.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <footer class="page-foot">
+        <div class="sources" id="sources">Sumber: menunggu data</div>
+        <div class="session" id="sessionInfo">sesi —</div>
+      </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
